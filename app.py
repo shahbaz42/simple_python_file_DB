@@ -13,10 +13,13 @@ ledger_schema = ['account_1', 'account_2', 'amount']
 # code for opening/creating csv files
 if not os.path.exists("./Accounts.csv") and not os.path.exists("./Ledger.csv"):
     # if DB files do not exist then create new empty files
+    # opening Accounts.csv file to write header
     f_ob = open('Accounts.csv', 'a+', newline='')
     f_wr = csv.DictWriter(f_ob, fieldnames=account_schema )
     f_wr.writeheader()
     f_ob.close()
+
+    # opening Ledger.csv file to write header
     f_ob = open('./Ledger.csv', 'a+', newline='')
     f_wr = csv.DictWriter(f_ob, fieldnames=ledger_schema)
     f_wr.writeheader()
@@ -26,8 +29,20 @@ def create_account(account_no, name, address, phone_number, PAN, account_type, b
     """
         Function for creating a new account
     """
+    # check if account already exists
+    f_obj = open('Accounts.csv', 'r')
+    f_reader = csv.DictReader(f_obj)
+    for record in f_reader:
+        if record['account_no'] == account_no:
+            print("Account already exists")
+            f_obj.close()
+            return
+    
+    # if account does not exist then create new account 
     f_ob = open('Accounts.csv', 'a+', newline='')
     f_wr = csv.DictWriter(f_ob, fieldnames=account_schema)
+
+    # write new record
     f_wr.writerow({
         "account_no" : account_no,
         "name" : name,
@@ -38,14 +53,19 @@ def create_account(account_no, name, address, phone_number, PAN, account_type, b
         "balance" : balance
     })
     f_ob.close()
+    print('\nAccount added successfully')
+
 
 def display_transaction_history(account_no):
     """
         Function for displaying transaction history
     """
+    # Open Ledger.csv file
     f_obj = open('Ledger.csv', 'r')
     f_reader = csv.DictReader(f_obj)
     print("\n")
+    
+    # Display transaction history
     for record in f_reader:
         if record['account_1'] == account_no :
             print("Debited : ", record)
@@ -58,9 +78,11 @@ def transaction(credit_account, debit_account, amount):
     """
         Function for making transactions
     """
-    t0 = time.time()
-    temp = []
-    success = 0
+
+
+    t0 = time.time() # start time
+    temp = [] # temporary list for storing records and writing to file if and only if transaction is successful
+    success = 0 # flag for checking if transaction is successful or not
 
     f_obj_account_1 = open('Accounts.csv', 'r')
     f_reader_1 = csv.DictReader(f_obj_account_1)
@@ -145,8 +167,7 @@ def main():
             balance = input("Enter initial deposit amount ")
 
             create_account(account_no,name,address,phone_no,pan,type,balance)
-            print('\nAccount added successfully')
-
+    
         elif choice == 2:
             account = input('Enter your account number : ')
             display_transaction_history(account)
